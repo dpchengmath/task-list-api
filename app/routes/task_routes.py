@@ -1,7 +1,7 @@
 from flask import Blueprint, abort, make_response, Response, request
 from .route_utilities import validate_model, create_model, get_models_with_filters
-from app.models.task import Task
 from app.db import db
+from app.models.task import Task
 from sqlalchemy import asc, desc
 from datetime import datetime
 import pytz
