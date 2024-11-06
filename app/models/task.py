@@ -1,6 +1,9 @@
-from sqlalchemy.orm import Mapped, mapped_column
-from ..db import db
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import ForeignKey
+from .goal import Goal
+from typing import Optional
 from datetime import datetime
+from ..db import db
 
 
 class Task(db.Model):
