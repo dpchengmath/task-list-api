@@ -12,7 +12,7 @@ def validate_model(cls, model_id):
     model = db.session.scalar(query)
 
     if not model:
-        abort(make_response({"message": f"task {model_id} not found"}, 404))
+        abort(make_response({ "message": f"{cls.__name__} {model_id} not found"}, 404))
     
     return model
 

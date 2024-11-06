@@ -1,4 +1,5 @@
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+# from .task import Task
 from ..db import db
 
 
@@ -15,8 +16,7 @@ class Goal(db.Model):
     @classmethod
     def from_dict(cls, goal_data):
         new_goal = cls(
-            title=goal_data["title"],
-            description=goal_data["description"]
+            title=goal_data["title"]
         )
 
         return new_goal
