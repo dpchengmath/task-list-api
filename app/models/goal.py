@@ -1,6 +1,5 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..db import db
-from .task import Task
 
 
 class Goal(db.Model):

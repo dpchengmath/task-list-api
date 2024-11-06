@@ -10,8 +10,8 @@ class Task(db.Model):
     title: Mapped[str]
     description: Mapped[str]
     completed_at: Mapped[datetime] = mapped_column(nullable=True)
-    author_id: Mapped[Optional[int]] = mapped_column(ForeignKey("goal.id"))
-    author: Mapped[Optional["Goal"]] = relationship(back_populates="tasks")
+    goal_id: Mapped[Optional[int]] = mapped_column(ForeignKey("goal.id"))
+    goal: Mapped[Optional["Goal"]] = relationship(back_populates="tasks")
 
     def to_dict(self):
             return dict(
@@ -19,7 +19,7 @@ class Task(db.Model):
                 title=self.title,
                 description=self.description,
                 is_complete = bool(self.completed_at),
-                goal=self.goal.title if self.goal else None
+                # goal=self.goal.title if self.goal else None
             )
     
     @classmethod
@@ -27,7 +27,7 @@ class Task(db.Model):
         new_task = cls(
             title=task_data["title"],
             description=task_data["description"],
-            author_id=task_data.get("goal_id", None)
+            # goal_id=task_data.get("goal_id", None)
         )
 
         return new_task
