@@ -2,9 +2,7 @@ from flask import Blueprint, abort, make_response, Response, request
 from .route_utilities import validate_model, create_model, get_models_with_filters
 from ..db import db
 from app.models.goal import Goal
-from sqlalchemy import asc, desc
-from datetime import datetime
-import pytz
+from app.models.task import Task
 
 
 goals_bp = Blueprint("goals_bp", __name__, url_prefix="/goals")
@@ -26,6 +24,8 @@ def create_goal():
     
     return response_body, 201
 
+    # request_body = request.get_json()
+    # return create_model(Goal, request_body)
 
 @goals_bp.get("")
 def get_all_goals():
@@ -65,17 +65,39 @@ def delete_goal(goal_id):
 
 
 @goals_bp.post("/<goal_id>/tasks")
-def create_task_with_goal_id(goal_id):
+def post_task_ids_to_goal(goal_id):
     goal = validate_model(Goal, goal_id)
-
     request_body = request.get_json()
-    request_body["goal_id"] = goal.id
+    tasks = request_body.get("task_ids")
+    tasks_list = []
 
-    return create_model(Goal, request_body)
+    for task in tasks:
+        task = validate_model(Task, task)
+        tasks_list.append(task)
+
+    goal.tasks = tasks_list
+    db.session.commit()
+
+    task_ids = [task.id for task in goal.tasks]
+
+    response = {
+        "id": goal.id,
+        "task_ids": task_ids
+    }
+
+    return response, 200
 
 
 @goals_bp.get("/<goal_id>/tasks")
-def get_tasks_by_goal(goal_id):
+def get_tasks_for_specific_goal(goal_id):
     goal = validate_model(Goal, goal_id)
-    response = [task.to_dict() for task in goal.tasks]
-    return response
+
+    tasks_response = [task.to_dict() for task in goal.tasks]
+
+    response = {
+        "id": goal.id,
+        "title": goal.title,
+        "tasks": tasks_response
+    }
+  
+    return response, 200
