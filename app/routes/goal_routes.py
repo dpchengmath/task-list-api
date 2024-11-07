@@ -79,3 +79,28 @@ def get_tasks_by_goal(goal_id):
     goal = validate_model(Goal, goal_id)
     response = [task.to_dict() for task in goal.tasks]
     return response
+
+@goals_bp.post("/<goal_id>/tasks")
+def post_task_ids_to_goal(goal_id):
+    goal = validate_model(Goal, goal_id)
+
+    request_body = request.get_json()
+    task_ids = request_body.get("task_ids")
+
+    if not task_ids:
+        abort(make_response({"message": "task_ids is required"}, 400))
+
+    tasks = []
+    for task_id in task_ids:
+        task = validate_model(Task, task_id)
+        tasks.append(task)
+
+    goal.tasks = tasks
+    db.session.commit()
+
+    response = {
+        "id": goal.id,
+        "task_ids": [task.id for task in tasks]
+    }
+
+    return response, 200
