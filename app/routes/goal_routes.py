@@ -11,21 +11,8 @@ goals_bp = Blueprint("goals_bp", __name__, url_prefix="/goals")
 @goals_bp.post("")
 def create_goal():
     request_body = request.get_json()
+    return create_model(Goal, request_body)
 
-    if not "title" in request_body:
-        response_body = {"details": "Invalid data"}
-        return make_response(response_body, 400)
-
-    new_goal = Goal.from_dict(request_body)
-    db.session.add(new_goal)
-    db.session.commit()
-
-    response_body = {"goal": new_goal.to_dict()}
-    
-    return response_body, 201
-
-    # request_body = request.get_json()
-    # return create_model(Goal, request_body)
 
 @goals_bp.get("")
 def get_all_goals():
