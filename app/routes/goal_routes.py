@@ -2,6 +2,7 @@ from flask import Blueprint, abort, make_response, Response, request
 from .route_utilities import validate_model, create_model, get_models_with_filters
 from ..db import db
 from app.models.goal import Goal
+from app.models.task import Task
 from sqlalchemy import asc, desc
 from datetime import datetime
 import pytz
@@ -65,42 +66,68 @@ def delete_goal(goal_id):
 
 
 @goals_bp.post("/<goal_id>/tasks")
-def create_task_with_goal_id(goal_id):
-    goal = validate_model(Goal, goal_id)
-
-    request_body = request.get_json()
-    request_body["goal_id"] = goal.id
-
-    return create_model(Goal, request_body)
-
-
-@goals_bp.get("/<goal_id>/tasks")
-def get_tasks_by_goal(goal_id):
-    goal = validate_model(Goal, goal_id)
-    response = [task.to_dict() for task in goal.tasks]
-    return response
-
-@goals_bp.post("/<goal_id>/tasks")
 def post_task_ids_to_goal(goal_id):
     goal = validate_model(Goal, goal_id)
-
     request_body = request.get_json()
-    task_ids = request_body.get("task_ids")
+    tasks = request_body.get("task_ids")
+    tasks_list = []
 
-    if not task_ids:
-        abort(make_response({"message": "task_ids is required"}, 400))
+    for task in tasks:
+        task = validate_model(Task, task)
+        tasks_list.append(task)
 
-    tasks = []
-    for task_id in task_ids:
-        task = validate_model(Task, task_id)
-        tasks.append(task)
-
-    goal.tasks = tasks
+    goal.tasks = tasks_list
     db.session.commit()
+
+    task_ids = [task.id for task in goal.tasks]
 
     response = {
         "id": goal.id,
-        "task_ids": [task.id for task in tasks]
+        "task_ids": task_ids
     }
 
     return response, 200
+
+
+@goals_bp.get("/<goal_id>/tasks")
+def get_tasks_for_specific_goal(goal_id):
+    goal = validate_model(Goal, goal_id)
+
+    tasks_response = [
+        {
+            "id": task.id,
+            "goal_id": task.goal_id,
+            "description": task.description,
+            "is_complete": task.completed_at if task.completed_at else False,
+            "title": task.title
+        }
+        for task in goal.tasks
+    ]
+
+    response = {
+        "id": goal.id,
+        "title": goal.title,
+        "tasks": tasks_response
+    }
+  
+    return response, 200
+
+
+@goals_bp.get("/<task_id>")
+def get_tasks_includes_goal_id(task_id):
+    task = validate_model(Task, task_id)
+    goal = task.goal
+
+    goal_id = goal.id if goal else None
+
+    response_body = {
+        "task": {
+            "id": task.id,
+            "goal_id": goal.id,
+            "title": task.title,
+            "description": task.description,
+            "is_complete": task.completed_at if task.completed_at else False
+        }
+    }
+
+    return response_body, 200
