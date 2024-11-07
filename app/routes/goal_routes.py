@@ -3,9 +3,6 @@ from .route_utilities import validate_model, create_model, get_models_with_filte
 from ..db import db
 from app.models.goal import Goal
 from app.models.task import Task
-from sqlalchemy import asc, desc
-from datetime import datetime
-import pytz
 
 
 goals_bp = Blueprint("goals_bp", __name__, url_prefix="/goals")
@@ -27,6 +24,8 @@ def create_goal():
     
     return response_body, 201
 
+    # request_body = request.get_json()
+    # return create_model(Goal, request_body)
 
 @goals_bp.get("")
 def get_all_goals():
@@ -93,16 +92,7 @@ def post_task_ids_to_goal(goal_id):
 def get_tasks_for_specific_goal(goal_id):
     goal = validate_model(Goal, goal_id)
 
-    tasks_response = [
-        {
-            "id": task.id,
-            "goal_id": task.goal_id,
-            "description": task.description,
-            "is_complete": task.completed_at if task.completed_at else False,
-            "title": task.title
-        }
-        for task in goal.tasks
-    ]
+    tasks_response = [task.to_dict() for task in goal.tasks]
 
     response = {
         "id": goal.id,
@@ -111,23 +101,3 @@ def get_tasks_for_specific_goal(goal_id):
     }
   
     return response, 200
-
-
-@goals_bp.get("/<task_id>")
-def get_tasks_includes_goal_id(task_id):
-    task = validate_model(Task, task_id)
-    goal = task.goal
-
-    goal_id = goal.id if goal else None
-
-    response_body = {
-        "task": {
-            "id": task.id,
-            "goal_id": goal.id,
-            "title": task.title,
-            "description": task.description,
-            "is_complete": task.completed_at if task.completed_at else False
-        }
-    }
-
-    return response_body, 200

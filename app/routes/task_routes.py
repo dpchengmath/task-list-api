@@ -2,6 +2,7 @@ from flask import Blueprint, abort, make_response, Response, request
 from .route_utilities import validate_model, create_model, get_models_with_filters, post_slack_message
 from app.db import db
 from app.models.task import Task
+from app.models.goal import Goal
 from sqlalchemy import asc, desc
 from datetime import datetime
 import pytz
@@ -33,7 +34,7 @@ def get_all_tasks():
     tasks = db.session.scalars(query)
 
     response_body = [task.to_dict() for task in tasks]
-
+    # return get_models_with_filters(Goal, request.args)
     return response_body
 
 
@@ -45,9 +46,6 @@ def create_task():
         response_body = {"details": "Invalid data"}
         return make_response(response_body, 400)
 
-    title = request_body["title"]
-    description = request_body["description"]
-
     new_task = Task.from_dict(request_body)
     db.session.add(new_task)
     db.session.commit()
@@ -56,11 +54,14 @@ def create_task():
 
     return response_body, 201
 
+    # request_body = request.get_json()
+    # return create_model(Task, request_body)
 
 @tasks_bp.get("/<task_id>")
 def get_one_task(task_id):
     task = validate_model(Task, task_id)
     response_body = {"task": task.to_dict()}
+    
     return response_body
 
 
