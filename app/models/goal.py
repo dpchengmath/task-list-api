@@ -4,7 +4,7 @@ from ..db import db
 
 class Goal(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    title: Mapped[str]
+    title: Mapped[str] = mapped_column(nullable=False)
     tasks: Mapped[list["Task"]] = relationship(back_populates="goal")
 
     def to_dict(self):
@@ -15,8 +15,4 @@ class Goal(db.Model):
     
     @classmethod
     def from_dict(cls, goal_data):
-        new_goal = cls(
-            title=goal_data["title"]
-        )
-
-        return new_goal
+        return cls(title=goal_data["title"])

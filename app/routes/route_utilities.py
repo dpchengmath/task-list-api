@@ -25,7 +25,7 @@ def create_model(cls, model_data):
         new_model = cls.from_dict(model_data)
     
     except KeyError as error:
-        response = {"details": "Invalid data"}
+        response = {"details": f"Invalid request: missing {error.args[0]}"}
         abort(make_response(response, 400))
     
     db.session.add(new_model)
@@ -57,15 +57,16 @@ def get_models_with_filters(cls, filters=None):
 
 def post_slack_message(task):
 
-    url = "https://slack.com/api/chat.postMessage"
+    URL = "https://slack.com/api/chat.postMessage"
+    CHANNEL_NAME = "api-test-channel"
+    TOKEN = os.environ.get("SLACK_BOT_TOKEN")
 
-    token = os.environ.get("SLACK_BOT_TOKEN")
-    headers = {"Authorization": f"Bearer {token}"}
+    headers = {"Authorization": f"Bearer {TOKEN}"}
     request_body = {
-        "channel": "api-test-channel",
+        "channel": CHANNEL_NAME,
         "text": f"Someone just completed the task {task.title}"
         }
 
-    notification = requests.post(url, headers=headers, json=request_body)
+    notification = requests.post(URL, headers=headers, json=request_body)
 
     return notification

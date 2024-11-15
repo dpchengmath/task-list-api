@@ -32,8 +32,8 @@ def update_task(task_id):
     task = validate_model(Task, task_id)
 
     request_body = request.get_json()
-    task.title = request_body.get("title", task.title)
-    task.description = request_body.get("description", task.description)
+    task.title = request_body.get("title")
+    task.description = request_body.get("description")
     db.session.commit()
 
     response_body = {"task": task.to_dict()}

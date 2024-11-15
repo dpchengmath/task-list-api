@@ -22,8 +22,7 @@ def get_all_goals():
 @goals_bp.get("/<goal_id>")
 def get_one_task(goal_id):
     goal = validate_model(Goal, goal_id)
-    response_body = {"goal": goal.to_dict()}
-    return response_body
+    return {"goal": goal.to_dict()}
 
 
 @goals_bp.put("/<goal_id>")
@@ -31,7 +30,7 @@ def update_goal(goal_id):
     goal = validate_model(Goal, goal_id)
 
     request_body = request.get_json()
-    goal.title = request_body.get("title", goal.title)
+    goal.title = request_body.get("title")
     db.session.commit()
 
     response_body = {"goal": goal.to_dict()}
@@ -56,11 +55,7 @@ def post_task_ids_to_goal(goal_id):
     goal = validate_model(Goal, goal_id)
     request_body = request.get_json()
     tasks = request_body.get("task_ids")
-    tasks_list = []
-
-    for task in tasks:
-        task = validate_model(Task, task)
-        tasks_list.append(task)
+    tasks_list = [validate_model(Task, task) for task in tasks]
 
     goal.tasks = tasks_list
     db.session.commit()
